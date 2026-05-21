@@ -1625,6 +1625,7 @@ function renderStats() {
   html += `
     <div class="stats-section">
       <h3>存储状态</h3>
+      <div class="stats-row"><span class="label">版本</span><span class="value">v1.8</span></div>
       <div class="stats-row"><span class="label">已用空间</span><span class="value">${getStorageUsageMB()} MB / 5 MB</span></div>
       <div class="stats-row"><span class="label">衣物数量</span><span class="value">${totalItems} 件</span></div>
       <div class="stats-row"><span class="label">自动备份</span><span class="value" id="backupStatusText">${backupDb ? (backupFailCount >= 2 ? '异常' : '已开启') : '未开启'}</span></div>
