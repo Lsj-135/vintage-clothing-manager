@@ -16,6 +16,9 @@
   --radius-sm: 1px;
   --nav-height: 56px;
   --header-height: 52px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
 }
 
 * {
@@ -46,13 +49,15 @@ input, select, textarea, button {
   top: 0;
   left: 0;
   right: 0;
-  height: var(--header-height);
+  height: calc(var(--header-height) + var(--safe-top));
+  padding-top: var(--safe-top);
   background: var(--primary);
   color: #f5f4f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding-left: 16px;
+  padding-right: 16px;
   z-index: 100;
   border-bottom: 1px solid #333;
 }
@@ -66,17 +71,28 @@ input, select, textarea, button {
 .header-actions {
   display: flex;
   gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
 }
 
 .icon-btn {
   background: none;
   border: 1px solid rgba(245,244,240,0.3);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 4px 8px;
   transition: all 0.2s;
   color: #f5f4f0;
   letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.icon-btn.save-btn {
+  border-color: #f5f4f0;
+  font-weight: 600;
+  letter-spacing: 2px;
 }
 
 .icon-btn:active {
@@ -126,7 +142,7 @@ input, select, textarea, button {
 
 /* ===== 主内容区 ===== */
 .main-content {
-  padding-top: var(--header-height);
+  padding-top: calc(var(--header-height) + var(--safe-top));
   padding-bottom: var(--nav-height);
   min-height: 100vh;
 }
@@ -873,14 +889,14 @@ input, select, textarea, button {
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--nav-height);
+  height: calc(var(--nav-height) + var(--safe-bottom));
   background: white;
   display: flex;
   align-items: center;
   justify-content: space-around;
   border-top: 1px solid var(--border);
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: var(--safe-bottom);
 }
 
 .nav-item {
@@ -975,7 +991,7 @@ input, select, textarea, button {
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
-  animation: slideUp 0.3s ease;
+  animation: fadeInUp 0.3s ease;
   border-top: 2px solid var(--primary);
 }
 
@@ -1092,6 +1108,62 @@ input, select, textarea, button {
 .toast.hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+/* ===== 存手机提醒条 ===== */
+.save-reminder {
+  position: fixed;
+  bottom: calc(var(--nav-height) + 10px);
+  left: 12px;
+  right: 12px;
+  background: var(--primary);
+  color: #f5f4f0;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 350;
+  font-size: 13px;
+  letter-spacing: 2px;
+  border: 1px solid #333;
+  animation: fadeInUp 0.3s ease;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.save-reminder.show {
+  visibility: visible;
+  opacity: 1;
+}
+
+.save-reminder span {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.save-reminder button {
+  background: #f5f4f0;
+  color: var(--primary);
+  border: none;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--font-serif);
+  letter-spacing: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.save-reminder button.dismiss {
+  background: transparent;
+  color: #999;
+  border: 1px solid #555;
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 /* ===== 隐藏工具类 ===== */
@@ -1304,6 +1376,105 @@ input, select, textarea, button {
 .stats-day-row .amount {
   font-weight: 600;
   color: var(--primary);
+}
+
+/* ===== 尺码表 ===== */
+.size-chart-content {
+  padding: 12px 16px 100px;
+}
+
+.size-category-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.size-tab {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-family: var(--font-serif);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.size-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.size-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 20px;
+}
+
+.size-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: var(--font-serif);
+  letter-spacing: 1px;
+  min-width: 500px;
+}
+
+.size-table th,
+.size-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.size-table th {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 500;
+  position: sticky;
+  top: 0;
+}
+
+.size-table td:first-child {
+  background: #f0efe9;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.size-table tr:nth-child(even) td {
+  background: #faf9f5;
+}
+
+.size-table tr:nth-child(even) td:first-child {
+  background: #eae8e2;
+}
+
+.size-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-serif);
+  letter-spacing: 3px;
+  margin: 20px 0 10px;
+  padding-left: 8px;
+  border-left: 3px solid var(--primary);
+  color: var(--primary);
+}
+
+.size-note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  line-height: 1.8;
+  letter-spacing: 1px;
 }
 
 /* ===== 二维码容器 ===== */

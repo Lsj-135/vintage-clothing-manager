@@ -14,8 +14,10 @@
 <body>
   <!-- 顶部导航 -->
   <header class="app-header">
-    <h1 class="app-title" id="pageTitle">衣 物 录</h1>
+    <h1 class="app-title" id="pageTitle">LiuShuiJ</h1>
     <div class="header-actions">
+      <button class="icon-btn save-btn" onclick="exportData()">存手机</button>
+      <button class="icon-btn" onclick="showSizeChart()">尺码</button>
       <button class="icon-btn" onclick="showQrModal()">扫码</button>
       <button class="icon-btn" onclick="showSearch()">搜索</button>
       <button class="icon-btn" onclick="showStats()">统计</button>
@@ -233,6 +235,16 @@
       <div id="settleContent" class="settle-content"></div>
     </section>
 
+    <!-- 尺码表页 -->
+    <section id="pageSizeChart" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goHome()">返回</button>
+        <h2>国际尺码对照</h2>
+        <div></div>
+      </div>
+      <div id="sizeChartContent" class="size-chart-content"></div>
+    </section>
+
     <!-- 统计页 -->
     <section id="pageStats" class="page">
       <div class="page-header">
@@ -364,6 +376,13 @@
 
   <!-- Toast 提示 -->
   <div id="toast" class="toast hidden"></div>
+
+  <!-- 自动存手机提醒条 -->
+  <div id="saveReminder" class="save-reminder">
+    <span>有新数据未存手机</span>
+    <button onclick="exportData();hideSaveReminder()">存到手机</button>
+    <button onclick="hideSaveReminder()" class="dismiss">稍后</button>
+  </div>
 
   <script src="app.js"></script>
 </body>
