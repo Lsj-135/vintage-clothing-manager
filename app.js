@@ -420,7 +420,7 @@ function goHome() {
   renderList();
   // 恢复底部导航
   document.querySelector('.bottom-nav').classList.remove('hidden');
-  // 重置底部导航
+  // 重置底部导航高亮
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelector('.nav-item').classList.add('active');
 }
@@ -428,6 +428,8 @@ function goHome() {
 function switchTab(tab, btn) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  // 确保底部导航可见
+  document.querySelector('.bottom-nav').classList.remove('hidden');
 
   switch (tab) {
     case 'home':
@@ -520,12 +522,12 @@ function renderList() {
     const cat = categories.find(c => c.id === item.categoryId);
     const batch = batches.find(b => b.id === item.batchId);
     const statusText = getStatusText(item.status);
-    const statusClass = 'status-' + item.status;
+    const statusClass = getStatusClass(item.status);
 
     return `
       <div class="clothes-card" onclick="showDetail('${item.id}')">
         <div class="card-image">
-          ${item.image ? `<img src="${item.image}" alt="${item.name}">` : (cat ? escHtml(cat.name) : '衣物')}
+          ${item.image ? `<img src="${item.image}" alt="${item.name}" loading="lazy">` : (cat ? escHtml(cat.name) : '衣物')}
         </div>
         <div class="card-info">
           <div class="card-name">${escHtml(item.name)}</div>
@@ -543,12 +545,17 @@ function renderList() {
     `;
   }).join('');
 
-  renderCategoryFilters();
+  // 使用已有的 categories 数据渲染筛选器，避免重复 JSON.parse
+  renderCategoryFiltersWith(categories, items);
 }
 
 function renderCategoryFilters() {
   const categories = getData(DB_KEYS.categories);
   const items = getData(DB_KEYS.items);
+  renderCategoryFiltersWith(categories, items);
+}
+
+function renderCategoryFiltersWith(categories, items) {
   const container = document.getElementById('categoryFilters');
 
   container.innerHTML = categories.map(cat => {
@@ -586,6 +593,7 @@ function showAddForm() {
   resetForm();
   populateSelects();
   showPage('pageForm');
+  document.querySelector('.bottom-nav').classList.add('hidden');
 }
 
 function editCurrentItem() {
@@ -595,6 +603,7 @@ function editCurrentItem() {
   populateSelects();
   loadItemToForm(editingItemId);
   showPage('pageForm');
+  document.querySelector('.bottom-nav').classList.add('hidden');
 }
 
 function resetForm() {
@@ -709,6 +718,7 @@ function saveItem() {
     status: document.getElementById('itemStatus').value,
     saleInfo: {
       actualSellingPrice: parseFloat(document.getElementById('actualSellingPrice').value) || 0,
+      extraCost: editingItemId ? (items.find(i => i.id === editingItemId)?.saleInfo?.extraCost || 0) : 0,
       receivedPrice: parseFloat(document.getElementById('receivedPrice').value) || 0,
       soldDate: document.getElementById('soldDate').value
     },
@@ -942,9 +952,8 @@ function showDetail(id) {
   }
 
   showPage('pageDetail');
+  document.querySelector('.bottom-nav').classList.add('hidden');
 }
-
-// ===== 售出结算 =====
 function showSettlePage() {
   if (!currentDetailId) return;
   settleItemId = currentDetailId;
@@ -1009,6 +1018,7 @@ function showSettlePage() {
 
   document.getElementById('settleContent').innerHTML = html;
   showPage('pageSettle');
+  document.querySelector('.bottom-nav').classList.add('hidden');
   calcSettleProfit();
 }
 
@@ -1464,8 +1474,7 @@ const SIZE_DATA = {
 let currentSizeCategory = 'womenTops';
 
 function showSizeChart() {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('pageSizeChart').classList.add('active');
+  showPage('pageSizeChart');
   document.querySelector('.bottom-nav').classList.add('hidden');
   renderSizeChart();
 }
@@ -1745,8 +1754,10 @@ function renderStatsTimeData(items) {
 function renderYearStats(soldItems) {
   const year = statsCurrentDate.getFullYear();
   const yearItems = soldItems.filter(i => {
-    const d = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt);
-    return d.getFullYear() === year;
+    const sd = i.saleInfo?.soldDate;
+    if (!sd) return false;
+    const parts = sd.split('-');
+    return parseInt(parts[0]) === year;
   });
 
   const count = yearItems.length;
@@ -1760,7 +1771,10 @@ function renderYearStats(soldItems) {
     monthlyData[m] = { count: 0, amount: 0, cost: 0 };
   }
   yearItems.forEach(i => {
-    const m = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt).getMonth();
+    const sd = i.saleInfo?.soldDate;
+    if (!sd) return;
+    const parts = sd.split('-');
+    const m = parseInt(parts[1]) - 1;
     monthlyData[m].count++;
     monthlyData[m].amount += (i.saleInfo?.receivedPrice || 0);
     monthlyData[m].cost += (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0);
@@ -1796,8 +1810,10 @@ function renderMonthStats(soldItems) {
   const year = statsCurrentDate.getFullYear();
   const month = statsCurrentDate.getMonth();
   const monthItems = soldItems.filter(i => {
-    const d = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt);
-    return d.getFullYear() === year && d.getMonth() === month;
+    const sd = i.saleInfo?.soldDate;
+    if (!sd) return false;
+    const parts = sd.split('-');
+    return parseInt(parts[0]) === year && parseInt(parts[1]) - 1 === month;
   });
 
   const count = monthItems.length;
@@ -1808,7 +1824,9 @@ function renderMonthStats(soldItems) {
   // 按日拆分
   const dailyData = {};
   monthItems.forEach(i => {
-    const day = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt).getDate();
+    const sd = i.saleInfo?.soldDate;
+    if (!sd) return;
+    const day = parseInt(sd.split('-')[2]);
     if (!dailyData[day]) dailyData[day] = { count: 0, amount: 0, cost: 0 };
     dailyData[day].count++;
     dailyData[day].amount += (i.saleInfo?.receivedPrice || 0);
@@ -1841,10 +1859,13 @@ function renderMonthStats(soldItems) {
 }
 
 function renderDayStats(soldItems) {
-  const dateStr = formatDate(statsCurrentDate.toISOString());
+  const y = statsCurrentDate.getFullYear();
+  const m = statsCurrentDate.getMonth();
+  const d = statsCurrentDate.getDate();
+  const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const dayItems = soldItems.filter(i => {
-    const d = i.saleInfo?.soldDate || formatDate(i.updatedAt || i.createdAt);
-    return d === dateStr;
+    const sd = i.saleInfo?.soldDate;
+    return sd === dateStr;
   });
 
   const count = dayItems.length;
