@@ -13,18 +13,17 @@ let editingItemId = null;
 let currentDetailId = null;
 let editingCategoryId = null;
 let editingBatchId = null;
-let selectedEmoji = '👕';
 let currentImageData = null;
 
 // 初始化默认数据
 function initDefaults() {
   if (!localStorage.getItem(DB_KEYS.categories)) {
     const defaults = [
-      { id: genId(), name: '上衣', icon: '👕' },
-      { id: genId(), name: '裤子', icon: '👖' },
-      { id: genId(), name: '裙子', icon: '👗' },
-      { id: genId(), name: '外套', icon: '🧥' },
-      { id: genId(), name: '连衣裙', icon: '👘' }
+      { id: genId(), name: '上衣' },
+      { id: genId(), name: '裤子' },
+      { id: genId(), name: '裙子' },
+      { id: genId(), name: '外套' },
+      { id: genId(), name: '连衣裙' }
     ];
     localStorage.setItem(DB_KEYS.categories, JSON.stringify(defaults));
   }
@@ -168,13 +167,13 @@ function renderList() {
     return `
       <div class="clothes-card" onclick="showDetail('${item.id}')">
         <div class="card-image">
-          ${item.image ? `<img src="${item.image}" alt="${item.name}">` : (cat ? cat.icon : '👗')}
+          ${item.image ? `<img src="${item.image}" alt="${item.name}">` : (cat ? escHtml(cat.name) : '衣物')}
         </div>
         <div class="card-info">
           <div class="card-name">${escHtml(item.name)}</div>
           <div class="card-meta">
-            ${cat ? `<span>${cat.icon} ${escHtml(cat.name)}</span>` : ''}
-            ${batch ? `<span>📦 ${escHtml(batch.name)}</span>` : ''}
+            ${cat ? `<span>${escHtml(cat.name)}</span>` : ''}
+            ${batch ? `<span>${escHtml(batch.name)}</span>` : ''}
           </div>
           <div class="card-prices">
             <span class="price-purchase">进: ¥${item.purchasePrice || '0'}</span>
@@ -197,7 +196,7 @@ function renderCategoryFilters() {
   container.innerHTML = categories.map(cat => {
     const count = items.filter(i => i.categoryId === cat.id).length;
     const active = currentFilter === cat.id ? 'active' : '';
-    return `<button class="filter-chip ${active}" data-filter="${cat.id}" onclick="setFilter('${cat.id}', this)">${cat.icon} ${escHtml(cat.name)} (${count})</button>`;
+    return `<button class="filter-chip ${active}" data-filter="${cat.id}" onclick="setFilter('${cat.id}', this)">${escHtml(cat.name)} (${count})</button>`;
   }).join('');
 }
 
@@ -479,15 +478,15 @@ function showDetail(id) {
   if (item.image) {
     html += `<img class="detail-image" src="${item.image}" alt="${escHtml(item.name)}">`;
   } else {
-    html += `<div class="detail-image-placeholder">${cat ? cat.icon : '👗'}</div>`;
+    html += `<div class="detail-image-placeholder">${cat ? escHtml(cat.name) : '衣物'}</div>`;
   }
 
   // 基本信息
   html += `<div class="detail-section">
     <h3>基本信息</h3>
     <div class="detail-row"><span class="label">名称</span><span class="value">${escHtml(item.name)}</span></div>
-    ${cat ? `<div class="detail-row"><span class="label">分类</span><span class="value">${cat.icon} ${escHtml(cat.name)}</span></div>` : ''}
-    ${batch ? `<div class="detail-row"><span class="label">批次</span><span class="value">📦 ${escHtml(batch.name)}</span></div>` : ''}
+    ${cat ? `<div class="detail-row"><span class="label">分类</span><span class="value">${escHtml(cat.name)}</span></div>` : ''}
+    ${batch ? `<div class="detail-row"><span class="label">批次</span><span class="value">${escHtml(batch.name)}</span></div>` : ''}
     <div class="detail-row"><span class="label">状态</span><span class="detail-status ${statusClass}">${statusText}</span></div>
     <div class="detail-row"><span class="label">添加时间</span><span class="value">${formatDate(item.createdAt)}</span></div>
   </div>`;
@@ -569,7 +568,7 @@ function renderCategories() {
   const listEl = document.getElementById('categoryList');
 
   if (categories.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📂</div><p>还没有分类</p><p class="empty-hint">点击右上角 + 添加</p></div>';
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">尚无分类</div><p>还没有分类</p><p class="empty-hint">点击右上角新增</p></div>';
     return;
   }
 
@@ -578,15 +577,15 @@ function renderCategories() {
     return `
       <div class="manage-card">
         <div class="manage-card-info">
-          <span class="manage-card-icon">${cat.icon}</span>
+          <span class="manage-card-icon">[${escHtml(cat.name)}]</span>
           <div>
             <div class="manage-card-name">${escHtml(cat.name)}</div>
-            <div class="manage-card-count">${count} 件衣服</div>
+            <div class="manage-card-count">${count} 件衣物</div>
           </div>
         </div>
         <div class="manage-card-actions">
-          <button onclick="editCategory('${cat.id}')" title="编辑">✏️</button>
-          <button onclick="deleteCategory('${cat.id}')" title="删除">🗑️</button>
+          <button onclick="editCategory('${cat.id}')" title="编辑">编辑</button>
+          <button onclick="deleteCategory('${cat.id}')" title="删除">删除</button>
         </div>
       </div>
     `;
@@ -595,11 +594,8 @@ function renderCategories() {
 
 function addCategory() {
   editingCategoryId = null;
-  selectedEmoji = '👕';
   document.getElementById('categoryModalTitle').textContent = '添加分类';
   document.getElementById('categoryName').value = '';
-  document.getElementById('categoryIcon').value = '';
-  document.querySelectorAll('.emoji-option').forEach(o => o.classList.remove('selected'));
   document.getElementById('categoryModal').classList.remove('hidden');
 }
 
@@ -609,24 +605,9 @@ function editCategory(id) {
   if (!cat) return;
 
   editingCategoryId = id;
-  selectedEmoji = cat.icon;
   document.getElementById('categoryModalTitle').textContent = '编辑分类';
   document.getElementById('categoryName').value = cat.name;
-  document.getElementById('categoryIcon').value = cat.icon;
-
-  document.querySelectorAll('.emoji-option').forEach(o => {
-    o.classList.toggle('selected', o.textContent.trim() === cat.icon);
-  });
-
   document.getElementById('categoryModal').classList.remove('hidden');
-}
-
-function selectEmoji(emoji) {
-  selectedEmoji = emoji;
-  document.getElementById('categoryIcon').value = emoji;
-  document.querySelectorAll('.emoji-option').forEach(o => {
-    o.classList.toggle('selected', o.textContent.trim() === emoji);
-  });
 }
 
 function saveCategory() {
@@ -636,18 +617,16 @@ function saveCategory() {
     return;
   }
 
-  const icon = document.getElementById('categoryIcon').value.trim() || selectedEmoji || '📁';
   const categories = getData(DB_KEYS.categories);
 
   if (editingCategoryId) {
     const idx = categories.findIndex(c => c.id === editingCategoryId);
     if (idx !== -1) {
       categories[idx].name = name;
-      categories[idx].icon = icon;
     }
     showToast('分类已更新');
   } else {
-    categories.push({ id: genId(), name, icon });
+    categories.push({ id: genId(), name });
     showToast('分类已添加');
   }
 
@@ -693,7 +672,7 @@ function renderBatches() {
   const listEl = document.getElementById('batchList');
 
   if (batches.length === 0) {
-    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>还没有批次</p><p class="empty-hint">点击右上角 + 添加</p></div>';
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">尚无批次</div><p>还没有批次</p><p class="empty-hint">点击右上角新增</p></div>';
     return;
   }
 
@@ -703,10 +682,10 @@ function renderBatches() {
     return `
       <div class="manage-card batch-card">
         <div class="batch-card-top">
-          <span class="batch-card-name">📦 ${escHtml(batch.name)}</span>
+          <span class="batch-card-name">${escHtml(batch.name)}</span>
           <div class="manage-card-actions">
-            <button onclick="editBatch('${batch.id}')" title="编辑">✏️</button>
-            <button onclick="deleteBatch('${batch.id}')" title="删除">🗑️</button>
+            <button onclick="editBatch('${batch.id}')" title="编辑">编辑</button>
+            <button onclick="deleteBatch('${batch.id}')" title="删除">删除</button>
           </div>
         </div>
         <div class="batch-card-bottom">
@@ -919,7 +898,7 @@ function renderStats() {
       const catPurchase = catItems.reduce((sum, i) => sum + (i.purchasePrice || 0), 0);
       html += `
         <div class="stats-row">
-          <span class="label">${cat.icon} ${escHtml(cat.name)}</span>
+          <span class="label">${escHtml(cat.name)}</span>
           <span class="value">${catItems.length}件 / 售${catSold}件 / 进¥${catPurchase.toFixed(2)}</span>
         </div>
       `;
@@ -935,7 +914,7 @@ function renderStats() {
       const batchSold = batchItems.filter(i => i.status === 'sold').length;
       html += `
         <div class="stats-row">
-          <span class="label">📦 ${escHtml(batch.name)}</span>
+          <span class="label">${escHtml(batch.name)}</span>
           <span class="value">${batchItems.length}件 / 售${batchSold}件 / 总费¥${(batch.totalCost || 0).toFixed(2)}</span>
         </div>
       `;

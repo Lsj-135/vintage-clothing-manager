@@ -5,28 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#e8685a">
+  <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='30' fill='%23e8685a'/><text x='90' y='125' font-size='110' text-anchor='middle' fill='white'>👗</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='4' fill='%231a1a1a'/><text x='90' y='120' font-size='80' text-anchor='middle' fill='%23f5f4f0' font-family='serif'>衣</text></svg>">
   <title>服装进货管理系统</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <!-- 顶部导航 -->
   <header class="app-header">
-    <h1 class="app-title" id="pageTitle">服装进货管理</h1>
+    <h1 class="app-title" id="pageTitle">衣 物 录</h1>
     <div class="header-actions">
-      <button class="icon-btn" onclick="showQrModal()" title="扫码">📱</button>
-      <button class="icon-btn" onclick="showSearch()" title="搜索">🔍</button>
-      <button class="icon-btn" onclick="showStats()" title="统计">📊</button>
+      <button class="icon-btn" onclick="showQrModal()">扫码</button>
+      <button class="icon-btn" onclick="showSearch()">搜索</button>
+      <button class="icon-btn" onclick="showStats()">统计</button>
     </div>
   </header>
 
   <!-- 搜索面板 -->
   <div id="searchPanel" class="search-panel hidden">
     <div class="search-inner">
-      <input type="text" id="searchInput" placeholder="搜索衣服名称、备注..." oninput="filterItems()">
-      <button class="icon-btn" onclick="hideSearch()">✕</button>
+      <input type="text" id="searchInput" placeholder="搜索衣物名称、备注..." oninput="filterItems()">
+      <button class="icon-btn" onclick="hideSearch()">关闭</button>
     </div>
   </div>
 
@@ -53,17 +53,17 @@
       <div id="clothesList" class="clothes-list"></div>
       <!-- 空状态 -->
       <div id="emptyState" class="empty-state">
-        <div class="empty-icon">👗</div>
-        <p>还没有添加衣服</p>
-        <p class="empty-hint">点击右下角 + 按钮添加</p>
+        <div class="empty-icon">尚无衣物</div>
+        <p>还没有添加衣物</p>
+        <p class="empty-hint">点击右下角添加</p>
       </div>
     </section>
 
     <!-- 添加/编辑衣服 -->
     <section id="pageForm" class="page">
       <div class="page-header">
-        <button class="back-btn" onclick="goHome()">← 返回</button>
-        <h2 id="formTitle">添加衣服</h2>
+        <button class="back-btn" onclick="goHome()">返回</button>
+        <h2 id="formTitle">添加衣物</h2>
         <button class="save-btn" onclick="saveItem()">保存</button>
       </div>
       <form id="itemForm" class="item-form">
@@ -72,8 +72,8 @@
           <div class="image-upload" id="imageUpload" onclick="document.getElementById('imageInput').click()">
             <img id="imagePreview" class="image-preview hidden" alt="预览">
             <div id="imagePlaceholder" class="image-placeholder">
-              <span class="upload-icon">📷</span>
-              <span>点击上传图片</span>
+              <span class="upload-icon">上传图片</span>
+              <span>点击此处</span>
             </div>
             <input type="file" id="imageInput" accept="image/*" hidden onchange="handleImageUpload(this)">
           </div>
@@ -85,7 +85,7 @@
           <h3 class="section-title">基本信息</h3>
           <div class="form-group">
             <label>名称</label>
-            <input type="text" id="itemName" placeholder="输入衣服名称" required>
+            <input type="text" id="itemName" placeholder="输入衣物名称" required>
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -192,11 +192,11 @@
     <!-- 详情页 -->
     <section id="pageDetail" class="page">
       <div class="page-header">
-        <button class="back-btn" onclick="goHome()">← 返回</button>
-        <h2>衣服详情</h2>
+        <button class="back-btn" onclick="goHome()">返回</button>
+        <h2>衣物详情</h2>
         <div class="detail-actions">
-          <button class="icon-btn" onclick="editCurrentItem()">✏️</button>
-          <button class="icon-btn delete-btn" onclick="deleteCurrentItem()">🗑️</button>
+          <button class="icon-btn" onclick="editCurrentItem()">编辑</button>
+          <button class="icon-btn delete-btn" onclick="deleteCurrentItem()">删除</button>
         </div>
       </div>
       <div id="detailContent" class="detail-content"></div>
@@ -205,9 +205,9 @@
     <!-- 分类管理 -->
     <section id="pageCategories" class="page">
       <div class="page-header">
-        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <button class="back-btn" onclick="goHome()">返回</button>
         <h2>分类管理</h2>
-        <button class="save-btn" onclick="addCategory()">+ 新增</button>
+        <button class="save-btn" onclick="addCategory()">新增</button>
       </div>
       <div id="categoryList" class="manage-list"></div>
     </section>
@@ -215,9 +215,9 @@
     <!-- 批次管理 -->
     <section id="pageBatches" class="page">
       <div class="page-header">
-        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <button class="back-btn" onclick="goHome()">返回</button>
         <h2>批次管理</h2>
-        <button class="save-btn" onclick="addBatch()">+ 新增</button>
+        <button class="save-btn" onclick="addBatch()">新增</button>
       </div>
       <div id="batchList" class="manage-list"></div>
     </section>
@@ -225,7 +225,7 @@
     <!-- 统计页 -->
     <section id="pageStats" class="page">
       <div class="page-header">
-        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <button class="back-btn" onclick="goHome()">返回</button>
         <h2>数据统计</h2>
         <div></div>
       </div>
@@ -236,22 +236,22 @@
   <!-- 底部导航 -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchTab('home', this)">
-      <span class="nav-icon">🏠</span>
+      <span class="nav-icon">首</span>
       <span class="nav-label">首页</span>
     </button>
     <button class="nav-item" onclick="switchTab('categories', this)">
-      <span class="nav-icon">📂</span>
+      <span class="nav-icon">类</span>
       <span class="nav-label">分类</span>
     </button>
     <button class="nav-item fab" onclick="showAddForm()">
       <span class="nav-icon">+</span>
     </button>
     <button class="nav-item" onclick="switchTab('batches', this)">
-      <span class="nav-icon">📦</span>
+      <span class="nav-icon">批</span>
       <span class="nav-label">批次</span>
     </button>
     <button class="nav-item" onclick="switchTab('stats', this)">
-      <span class="nav-icon">📊</span>
+      <span class="nav-icon">统</span>
       <span class="nav-label">统计</span>
     </button>
   </nav>
@@ -264,24 +264,6 @@
       <div class="form-group">
         <label>分类名称</label>
         <input type="text" id="categoryName" placeholder="如：上衣、裤子、裙子...">
-      </div>
-      <div class="form-group">
-        <label>图标 (emoji)</label>
-        <div class="emoji-picker">
-          <button type="button" class="emoji-option" onclick="selectEmoji('👕')">👕</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('👖')">👖</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('👗')">👗</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('👔')">👔</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('🧥')">🧥</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('🩳')">🩳</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('👘')">👘</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('🩱')">🩱</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('👙')">👙</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('🧦')">🧦</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('👟')">👟</button>
-          <button type="button" class="emoji-option" onclick="selectEmoji('🧢')">🧢</button>
-        </div>
-        <input type="text" id="categoryIcon" placeholder="或输入自定义emoji" class="emoji-input">
       </div>
       <div class="modal-actions">
         <button class="btn-secondary" onclick="closeCategoryModal()">取消</button>
@@ -297,7 +279,7 @@
       <h3 id="batchModalTitle">添加批次</h3>
       <div class="form-group">
         <label>批次名称</label>
-        <input type="text" id="batchName" placeholder="如：2024年1月进货...">
+        <input type="text" id="batchName" placeholder="如：二零二五年一月进货...">
       </div>
       <div class="form-group">
         <label>进货日期</label>
@@ -339,10 +321,10 @@
 
   <!-- PWA 安装提示横幅 -->
   <div id="installBanner" class="install-banner hidden">
-    <span>📱 添加到主屏幕，像APP一样使用</span>
+    <span>添加至主屏幕，如应用般使用</span>
     <div class="install-banner-actions">
       <button class="install-btn" onclick="installApp()">安装</button>
-      <button class="dismiss-btn" onclick="dismissInstall()">✕</button>
+      <button class="dismiss-btn" onclick="dismissInstall()">关闭</button>
     </div>
   </div>
 
@@ -350,21 +332,21 @@
   <div id="qrModal" class="modal hidden">
     <div class="modal-overlay" onclick="closeQrModal()"></div>
     <div class="modal-content" style="text-align:center">
-      <h3>扫码在手机上打开</h3>
-      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">确保手机和电脑在同一WiFi下</p>
+      <h3>扫码访问</h3>
+      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;letter-spacing:1px">手机与电脑需在同一网络</p>
       <div id="qrCode" class="qr-code-container"></div>
       <p id="qrUrl" style="margin-top:12px;font-size:12px;color:var(--text-secondary);word-break:break-all"></p>
-      <div style="margin-top:16px;padding:12px;background:#faf8f6;border-radius:8px;text-align:left">
-        <p style="font-size:13px;font-weight:600;margin-bottom:6px">安装步骤：</p>
-        <p style="font-size:12px;color:var(--text-secondary);line-height:1.8">
-          1. 手机扫码打开页面<br>
-          2. 点击浏览器菜单（⋯或⬆️）<br>
-          3. 选择"添加到主屏幕"<br>
-          4. 点击"安装"即可
+      <div style="margin-top:16px;padding:12px;background:var(--bg);border:1px solid var(--border);text-align:left">
+        <p style="font-size:13px;font-weight:700;margin-bottom:6px;letter-spacing:2px">安装步骤</p>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.8;letter-spacing:1px">
+          一、手机扫码打开页面<br>
+          二、点击浏览器菜单<br>
+          三、选择"添加到主屏幕"<br>
+          四、点击"安装"即可
         </p>
       </div>
       <div class="modal-actions">
-        <button class="btn-primary" onclick="closeQrModal()">知道了</button>
+        <button class="btn-primary" onclick="closeQrModal()">知晓</button>
       </div>
     </div>
   </div>

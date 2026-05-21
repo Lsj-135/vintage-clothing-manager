@@ -1,21 +1,21 @@
 /* ===== 全局重置与变量 ===== */
 :root {
-  --primary: #e8685a;
-  --primary-light: #ff8a7a;
-  --primary-dark: #c94e42;
-  --bg: #f5f0eb;
+  --primary: #1a1a1a;
+  --primary-light: #333333;
+  --primary-dark: #000000;
+  --bg: #f5f4f0;
   --bg-card: #ffffff;
-  --text: #2d2a26;
-  --text-secondary: #8a8580;
-  --border: #e8e2dc;
-  --success: #4caf50;
-  --warning: #ff9800;
-  --danger: #f44336;
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --radius: 12px;
-  --radius-sm: 8px;
-  --nav-height: 64px;
-  --header-height: 56px;
+  --text: #1a1a1a;
+  --text-secondary: #666666;
+  --border: #d9d5ce;
+  --success: #2d5a27;
+  --warning: #8a6d1b;
+  --danger: #8b2500;
+  --shadow: 0 1px 4px rgba(0,0,0,0.1);
+  --radius: 2px;
+  --radius-sm: 1px;
+  --nav-height: 56px;
+  --header-height: 52px;
 }
 
 * {
@@ -26,11 +26,11 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'STSong', 'SimSun', 'Songti SC', serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -48,38 +48,40 @@ input, select, textarea, button {
   right: 0;
   height: var(--header-height);
   background: var(--primary);
-  color: white;
+  color: #f5f4f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(232,104,90,0.3);
+  border-bottom: 1px solid #333;
 }
 
 .app-title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 4px;
 }
 
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .icon-btn {
   background: none;
-  border: none;
-  font-size: 20px;
+  border: 1px solid rgba(245,244,240,0.3);
+  font-size: 13px;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 50%;
-  transition: background 0.2s;
-  color: inherit;
+  padding: 4px 10px;
+  transition: all 0.2s;
+  color: #f5f4f0;
+  letter-spacing: 1px;
 }
 
 .icon-btn:active {
-  background: rgba(255,255,255,0.2);
+  background: rgba(245,244,240,0.15);
+  border-color: rgba(245,244,240,0.5);
 }
 
 /* ===== 搜索面板 ===== */
@@ -93,6 +95,7 @@ input, select, textarea, button {
   box-shadow: var(--shadow);
   z-index: 90;
   transition: transform 0.3s ease;
+  border-bottom: 1px solid var(--border);
 }
 
 .search-panel.hidden {
@@ -108,12 +111,13 @@ input, select, textarea, button {
 
 .search-inner input {
   flex: 1;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 0;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s;
+  background: var(--bg);
 }
 
 .search-inner input:focus {
@@ -137,7 +141,7 @@ input, select, textarea, button {
 
 /* ===== 筛选栏 ===== */
 .filter-bar {
-  padding: 12px 16px;
+  padding: 10px 16px;
   background: white;
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -147,9 +151,9 @@ input, select, textarea, button {
 
 .filter-scroll {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -159,30 +163,31 @@ input, select, textarea, button {
 
 .filter-chip {
   flex-shrink: 0;
-  padding: 6px 16px;
+  padding: 5px 14px;
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: 0;
   background: white;
   cursor: pointer;
   font-size: 13px;
   color: var(--text-secondary);
   transition: all 0.2s;
+  letter-spacing: 1px;
 }
 
 .filter-chip.active {
   background: var(--primary);
-  color: white;
+  color: #f5f4f0;
   border-color: var(--primary);
 }
 
 .filter-actions {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .filter-actions select {
-  padding: 6px 12px;
+  padding: 5px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   background: white;
   font-size: 13px;
   color: var(--text-secondary);
@@ -191,36 +196,40 @@ input, select, textarea, button {
 
 /* ===== 衣服列表 ===== */
 .clothes-list {
-  padding: 12px 16px;
+  padding: 10px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .clothes-card {
   background: var(--bg-card);
-  border-radius: var(--radius);
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
   display: flex;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s;
 }
 
 .clothes-card:active {
-  transform: scale(0.98);
+  background: #f9f8f5;
 }
 
 .card-image {
-  width: 110px;
-  min-height: 130px;
+  width: 100px;
+  min-height: 120px;
   flex-shrink: 0;
-  background: #f0ebe6;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
+  font-size: 14px;
+  color: var(--text-secondary);
   overflow: hidden;
+  border-right: 1px solid var(--border);
+  letter-spacing: 2px;
+  writing-mode: vertical-rl;
 }
 
 .card-image img {
@@ -231,19 +240,20 @@ input, select, textarea, button {
 
 .card-info {
   flex: 1;
-  padding: 12px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
 .card-name {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 2px;
 }
 
 .card-meta {
@@ -263,7 +273,7 @@ input, select, textarea, button {
 .card-prices {
   display: flex;
   gap: 12px;
-  margin-top: 4px;
+  margin-top: 3px;
   font-size: 13px;
 }
 
@@ -278,27 +288,31 @@ input, select, textarea, button {
 
 .card-status {
   display: inline-block;
-  padding: 2px 10px;
-  border-radius: 10px;
+  padding: 2px 8px;
+  border: 1px solid;
   font-size: 11px;
   font-weight: 500;
-  margin-top: 4px;
+  margin-top: 3px;
   width: fit-content;
+  letter-spacing: 1px;
 }
 
 .status-in_stock {
-  background: #e8f5e9;
-  color: #2e7d32;
+  border-color: var(--success);
+  color: var(--success);
+  background: transparent;
 }
 
 .status-sold {
-  background: #fff3e0;
-  color: #e65100;
+  border-color: var(--warning);
+  color: var(--warning);
+  background: transparent;
 }
 
 .status-returned {
-  background: #ffebee;
-  color: #c62828;
+  border-color: var(--danger);
+  color: var(--danger);
+  background: transparent;
 }
 
 /* ===== 空状态 ===== */
@@ -309,13 +323,16 @@ input, select, textarea, button {
 }
 
 .empty-icon {
-  font-size: 64px;
+  font-size: 48px;
   margin-bottom: 16px;
+  letter-spacing: 8px;
+  font-weight: 700;
 }
 
 .empty-hint {
   font-size: 13px;
   margin-top: 8px;
+  letter-spacing: 1px;
 }
 
 /* ===== 表单页面 ===== */
@@ -323,7 +340,7 @@ input, select, textarea, button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 16px;
   background: white;
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -334,26 +351,29 @@ input, select, textarea, button {
 .back-btn {
   background: none;
   border: none;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--primary);
   cursor: pointer;
   padding: 4px 8px;
+  letter-spacing: 1px;
 }
 
 .page-header h2 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 3px;
 }
 
 .save-btn {
   background: var(--primary);
-  color: white;
+  color: #f5f4f0;
   border: none;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 14px;
+  padding: 5px 14px;
+  border-radius: 0;
+  font-size: 13px;
   cursor: pointer;
   font-weight: 500;
+  letter-spacing: 2px;
 }
 
 .save-btn:active {
@@ -366,23 +386,24 @@ input, select, textarea, button {
 
 .form-section {
   background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow);
+  border-radius: 0;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
 }
 
 .section-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--primary);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
+  letter-spacing: 3px;
 }
 
 .form-group {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .form-group:last-child {
@@ -393,16 +414,17 @@ input, select, textarea, button {
   display: block;
   font-size: 13px;
   color: var(--text-secondary);
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  letter-spacing: 1px;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   outline: none;
   transition: border-color 0.2s;
   background: white;
@@ -420,7 +442,7 @@ input, select, textarea, button {
 
 .form-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .form-row .form-group {
@@ -430,7 +452,7 @@ input, select, textarea, button {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .form-grid .form-group {
@@ -441,16 +463,16 @@ input, select, textarea, button {
 .image-upload {
   width: 100%;
   aspect-ratio: 4/3;
-  max-height: 280px;
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
+  max-height: 260px;
+  border: 1px dashed var(--border);
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
   transition: border-color 0.2s;
-  background: #faf8f6;
+  background: var(--bg);
 }
 
 .image-upload:active {
@@ -461,13 +483,15 @@ input, select, textarea, button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
+  letter-spacing: 2px;
 }
 
 .upload-icon {
-  font-size: 40px;
+  font-size: 14px;
+  letter-spacing: 2px;
 }
 
 .image-preview {
@@ -477,35 +501,36 @@ input, select, textarea, button {
 }
 
 .remove-image-btn {
-  margin-top: 8px;
+  margin-top: 6px;
   background: none;
   border: 1px solid var(--danger);
   color: var(--danger);
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  border-radius: 0;
   cursor: pointer;
   font-size: 12px;
+  letter-spacing: 1px;
 }
 
 /* ===== 自定义参数 ===== */
 .custom-params {
-  margin-top: 12px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .custom-param-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
 .custom-param-row input {
   flex: 1;
-  padding: 8px 10px;
+  padding: 6px 8px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   outline: none;
 }
 
@@ -516,23 +541,24 @@ input, select, textarea, button {
 .remove-param-btn {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 14px;
   color: var(--danger);
   cursor: pointer;
   padding: 4px;
 }
 
 .add-param-btn {
-  margin-top: 8px;
+  margin-top: 6px;
   background: none;
   border: 1px dashed var(--border);
   color: var(--text-secondary);
-  padding: 8px;
-  border-radius: var(--radius-sm);
+  padding: 6px;
+  border-radius: 0;
   cursor: pointer;
   width: 100%;
-  font-size: 13px;
+  font-size: 12px;
   transition: all 0.2s;
+  letter-spacing: 1px;
 }
 
 .add-param-btn:active {
@@ -542,8 +568,8 @@ input, select, textarea, button {
 
 /* ===== 销售信息 ===== */
 .sale-info-section {
-  margin-top: 12px;
-  padding-top: 12px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--border);
 }
 
@@ -556,47 +582,58 @@ input, select, textarea, button {
   width: 100%;
   max-height: 400px;
   object-fit: contain;
-  border-radius: var(--radius);
-  background: #faf8f6;
+  border-radius: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
 }
 
 .detail-image-placeholder {
   width: 100%;
-  height: 200px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 80px;
-  background: #faf8f6;
-  border-radius: var(--radius);
+  font-size: 20px;
+  background: var(--bg);
+  border-radius: 0;
+  border: 1px solid var(--border);
+  letter-spacing: 6px;
+  color: var(--text-secondary);
 }
 
 .detail-section {
   background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-top: 12px;
-  box-shadow: var(--shadow);
+  border-radius: 0;
+  padding: 14px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
 }
 
 .detail-section h3 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--primary);
-  margin-bottom: 10px;
-  padding-bottom: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
+  letter-spacing: 3px;
 }
 
 .detail-row {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
+  padding: 5px 0;
   font-size: 14px;
+  border-bottom: 1px dashed #eee;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
 }
 
 .detail-row .label {
   color: var(--text-secondary);
+  letter-spacing: 1px;
 }
 
 .detail-row .value {
@@ -619,26 +656,35 @@ input, select, textarea, button {
 
 .detail-status {
   display: inline-block;
-  padding: 4px 14px;
-  border-radius: 14px;
-  font-size: 13px;
+  padding: 3px 12px;
+  border: 1px solid;
+  font-size: 12px;
   font-weight: 500;
+  letter-spacing: 1px;
 }
 
 .detail-notes {
   font-size: 14px;
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.8;
   white-space: pre-wrap;
+  letter-spacing: 1px;
 }
 
 .detail-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+}
+
+.detail-actions .icon-btn {
+  color: var(--text-secondary);
+  border-color: var(--border);
+  font-size: 12px;
 }
 
 .delete-btn:active {
-  background: rgba(244,67,54,0.2);
+  color: var(--danger);
+  border-color: var(--danger);
 }
 
 /* ===== 管理列表（分类/批次） ===== */
@@ -646,14 +692,14 @@ input, select, textarea, button {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .manage-card {
   background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  box-shadow: var(--shadow);
+  border-radius: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -662,45 +708,50 @@ input, select, textarea, button {
 .manage-card-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .manage-card-icon {
-  font-size: 28px;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--text-secondary);
 }
 
 .manage-card-name {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
+  letter-spacing: 2px;
 }
 
 .manage-card-count {
   font-size: 12px;
   color: var(--text-secondary);
+  letter-spacing: 1px;
 }
 
 .manage-card-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .manage-card-actions button {
   background: none;
-  border: none;
-  font-size: 18px;
+  border: 1px solid var(--border);
+  font-size: 12px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
+  padding: 3px 8px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
 }
 
 .manage-card-actions button:active {
-  background: rgba(0,0,0,0.05);
+  background: var(--bg);
 }
 
 .batch-card {
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
 }
 
 .batch-card-top {
@@ -711,8 +762,9 @@ input, select, textarea, button {
 }
 
 .batch-card-name {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 15px;
+  letter-spacing: 2px;
 }
 
 .batch-card-date {
@@ -746,28 +798,30 @@ input, select, textarea, button {
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .stat-card {
   background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 16px;
-  box-shadow: var(--shadow);
+  border-radius: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
   text-align: center;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--primary);
+  letter-spacing: 2px;
 }
 
 .stat-label {
   font-size: 12px;
   color: var(--text-secondary);
-  margin-top: 4px;
+  margin-top: 2px;
+  letter-spacing: 2px;
 }
 
 .stat-card.full-width {
@@ -776,30 +830,37 @@ input, select, textarea, button {
 
 .stats-section {
   background: var(--bg-card);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow);
+  border-radius: 0;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
 }
 
 .stats-section h3 {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--primary);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
+  letter-spacing: 3px;
 }
 
 .stats-row {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
-  font-size: 14px;
+  padding: 5px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed #eee;
+}
+
+.stats-row:last-child {
+  border-bottom: none;
 }
 
 .stats-row .label {
   color: var(--text-secondary);
+  letter-spacing: 1px;
 }
 
 .stats-row .value {
@@ -817,7 +878,7 @@ input, select, textarea, button {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+  border-top: 1px solid var(--border);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
@@ -828,12 +889,12 @@ input, select, textarea, button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   cursor: pointer;
-  padding: 6px 12px;
+  padding: 4px 10px;
   color: var(--text-secondary);
   transition: color 0.2s;
-  min-width: 56px;
+  min-width: 50px;
 }
 
 .nav-item.active {
@@ -841,35 +902,47 @@ input, select, textarea, button {
 }
 
 .nav-icon {
-  font-size: 22px;
+  font-size: 13px;
+  display: none;
 }
 
 .nav-label {
-  font-size: 10px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  font-weight: 500;
+}
+
+.nav-item.active .nav-label {
+  font-weight: 700;
 }
 
 .nav-item.fab {
   position: relative;
-  top: -16px;
+  top: -12px;
   background: var(--primary);
-  color: white;
-  width: 52px;
-  height: 52px;
+  color: #f5f4f0;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(232,104,90,0.4);
+  border: 2px solid var(--bg);
   padding: 0;
 }
 
 .nav-item.fab .nav-icon {
-  font-size: 28px;
+  display: block;
+  font-size: 24px;
   font-weight: 300;
 }
 
+.nav-item.fab .nav-label {
+  display: none;
+}
+
 .nav-item.fab:active {
-  transform: scale(0.92);
+  background: var(--primary-dark);
 }
 
 /* ===== 弹窗 ===== */
@@ -889,20 +962,21 @@ input, select, textarea, button {
 .modal-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.5);
 }
 
 .modal-content {
   position: relative;
   background: white;
-  border-radius: var(--radius) var(--radius) 0 0;
-  padding: 24px 20px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+  border-radius: 0;
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
   width: 100%;
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
   animation: slideUp 0.3s ease;
+  border-top: 2px solid var(--primary);
 }
 
 @keyframes slideUp {
@@ -911,28 +985,30 @@ input, select, textarea, button {
 }
 
 .modal-content h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 14px;
   text-align: center;
+  letter-spacing: 4px;
 }
 
 .modal-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .btn-primary {
   flex: 1;
   background: var(--primary);
-  color: white;
+  color: #f5f4f0;
   border: none;
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  font-size: 15px;
+  padding: 10px;
+  border-radius: 0;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  letter-spacing: 2px;
 }
 
 .btn-primary:active {
@@ -944,70 +1020,34 @@ input, select, textarea, button {
   background: white;
   color: var(--text);
   border: 1px solid var(--border);
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  font-size: 15px;
+  padding: 10px;
+  border-radius: 0;
+  font-size: 14px;
   cursor: pointer;
-}
-
-/* ===== Emoji 选择器 ===== */
-.emoji-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.emoji-option {
-  width: 40px;
-  height: 40px;
-  border: 2px solid transparent;
-  border-radius: var(--radius-sm);
-  background: #f5f0eb;
-  font-size: 22px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-
-.emoji-option.selected {
-  border-color: var(--primary);
-  background: #fff0ee;
-}
-
-.emoji-option:active {
-  transform: scale(0.9);
-}
-
-.emoji-input {
-  width: 60px !important;
-  text-align: center;
-  font-size: 20px;
+  letter-spacing: 1px;
 }
 
 /* ===== 状态列表 ===== */
 .status-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .status-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 13px;
-  background: #f5f0eb;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
 .status-tag .remove-status {
   background: none;
   border: none;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   color: var(--text-secondary);
   padding: 0;
@@ -1015,20 +1055,20 @@ input, select, textarea, button {
 
 .add-status-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .add-status-row input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   outline: none;
 }
 
 .add-status-row .btn-primary {
   flex: none;
-  padding: 8px 16px;
+  padding: 6px 14px;
 }
 
 /* ===== Toast ===== */
@@ -1037,14 +1077,16 @@ input, select, textarea, button {
   bottom: calc(var(--nav-height) + 20px);
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.8);
-  color: white;
-  padding: 10px 24px;
-  border-radius: 24px;
-  font-size: 14px;
+  background: var(--primary);
+  color: #f5f4f0;
+  padding: 8px 20px;
+  border-radius: 0;
+  font-size: 13px;
   z-index: 300;
   transition: opacity 0.3s;
   white-space: nowrap;
+  letter-spacing: 2px;
+  border: 1px solid #333;
 }
 
 .toast.hidden {
@@ -1063,42 +1105,43 @@ input, select, textarea, button {
   top: var(--header-height);
   left: 0;
   right: 0;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: white;
-  padding: 10px 16px;
+  background: var(--primary);
+  color: #f5f4f0;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 95;
-  font-size: 13px;
-  box-shadow: 0 2px 8px rgba(232,104,90,0.3);
+  font-size: 12px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #333;
 }
 
 .install-banner-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
 
 .install-btn {
-  background: white;
+  background: #f5f4f0;
   color: var(--primary);
-  border: none;
-  padding: 6px 16px;
-  border-radius: 16px;
-  font-size: 13px;
+  border: 1px solid #f5f4f0;
+  padding: 4px 12px;
+  border-radius: 0;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  letter-spacing: 1px;
 }
 
 .dismiss-btn {
   background: none;
-  border: none;
-  color: white;
-  font-size: 18px;
+  border: 1px solid rgba(245,244,240,0.3);
+  color: #f5f4f0;
+  font-size: 12px;
   cursor: pointer;
-  padding: 2px 6px;
-  opacity: 0.8;
+  padding: 2px 8px;
 }
 
 /* ===== 二维码容器 ===== */
@@ -1113,7 +1156,7 @@ input, select, textarea, button {
   .clothes-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
   .stats-grid {
@@ -1121,7 +1164,7 @@ input, select, textarea, button {
   }
 
   .modal-content {
-    border-radius: var(--radius);
+    border-top: 2px solid var(--primary);
     margin-bottom: 20px;
   }
 
