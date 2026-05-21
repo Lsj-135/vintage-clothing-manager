@@ -119,7 +119,7 @@ function getStorageUsageMB() {
 const BACKUP_DB_NAME = 'LiuShuiJ_Backup';
 const BACKUP_DB_VERSION = 1;
 const BACKUP_STORE = 'backups';
-const MAX_BACKUPS = 10; // 保留最近10个备份版本
+const MAX_BACKUPS = 3; // 保留最近3个备份版本
 let backupDb = null;
 let backupTimer = null;
 let lastBackupTime = null;
