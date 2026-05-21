@@ -14,6 +14,9 @@ let currentDetailId = null;
 let editingCategoryId = null;
 let editingBatchId = null;
 let currentImageData = null;
+let settleItemId = null;
+let statsTimeMode = 'month'; // year / month / day
+let statsCurrentDate = new Date();
 
 // 初始化默认数据
 function initDefaults() {
@@ -255,7 +258,7 @@ function populateSelects() {
 
   const catSelect = document.getElementById('itemCategory');
   catSelect.innerHTML = '<option value="">选择分类</option>' +
-    categories.map(c => `<option value="${c.id}">${c.icon} ${escHtml(c.name)}</option>`).join('');
+    categories.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
 
   const batchSelect = document.getElementById('itemBatch');
   batchSelect.innerHTML = '<option value="">选择批次</option>' +
@@ -523,9 +526,13 @@ function showDetail(id) {
 
   if (item.status === 'sold' && item.saleInfo) {
     html += `<div class="detail-row"><span class="label">实际卖出价</span><span class="value price">¥${item.saleInfo.actualSellingPrice || '0'}</span></div>`;
+    if (item.saleInfo.extraCost) {
+      html += `<div class="detail-row"><span class="label">额外支出</span><span class="value price">¥${item.saleInfo.extraCost}</span></div>`;
+    }
     html += `<div class="detail-row"><span class="label">到手价</span><span class="value price">¥${item.saleInfo.receivedPrice || '0'}</span></div>`;
 
-    const profit = (item.saleInfo.receivedPrice || 0) - (item.purchasePrice || 0);
+    const extraCost = item.saleInfo.extraCost || 0;
+    const profit = (item.saleInfo.receivedPrice || 0) - (item.purchasePrice || 0) - extraCost;
     const profitClass = profit >= 0 ? 'profit' : 'loss';
     const profitSign = profit >= 0 ? '+' : '';
     html += `<div class="detail-row"><span class="label">利润</span><span class="value ${profitClass}">${profitSign}¥${profit.toFixed(2)}</span></div>`;
@@ -546,7 +553,141 @@ function showDetail(id) {
   }
 
   document.getElementById('detailContent').innerHTML = html;
+
+  // 显示/隐藏售出按钮
+  const btnSold = document.getElementById('btnMarkSold');
+  if (item.status === 'in_stock') {
+    btnSold.style.display = 'inline-block';
+  } else {
+    btnSold.style.display = 'none';
+  }
+
   showPage('pageDetail');
+}
+
+// ===== 售出结算 =====
+function showSettlePage() {
+  if (!currentDetailId) return;
+  settleItemId = currentDetailId;
+
+  const items = getData(DB_KEYS.items);
+  const item = items.find(i => i.id === settleItemId);
+  if (!item) return;
+
+  const categories = getData(DB_KEYS.categories);
+  const cat = categories.find(c => c.id === item.categoryId);
+
+  const purchasePrice = item.purchasePrice || 0;
+  const sellingPrice = item.sellingPrice || 0;
+
+  let html = `
+    <div class="settle-item-name">${cat ? '[' + escHtml(cat.name) + '] ' : ''}${escHtml(item.name)}</div>
+
+    <div class="form-section">
+      <h3 class="section-title">关联价格</h3>
+      <div class="form-group">
+        <label>进货价</label>
+        <input type="number" id="settlePurchase" value="${purchasePrice}" step="0.01" readonly style="background:var(--bg);color:var(--text-secondary)">
+      </div>
+      <div class="form-group">
+        <label>标价</label>
+        <input type="number" id="settleSelling" value="${sellingPrice}" step="0.01" readonly style="background:var(--bg);color:var(--text-secondary)">
+      </div>
+      <div class="form-group">
+        <label>实际卖出价</label>
+        <input type="number" id="settleActualPrice" value="${sellingPrice}" step="0.01" placeholder="0.00" oninput="calcSettleProfit()">
+      </div>
+      <div class="form-group">
+        <label>额外支出（运费、手续费等）</label>
+        <input type="number" id="settleExtraCost" value="0" step="0.01" placeholder="0.00" oninput="calcSettleProfit()">
+      </div>
+      <div class="form-group">
+        <label>到手价</label>
+        <input type="number" id="settleReceived" value="" step="0.01" placeholder="0.00" oninput="calcSettleProfit()">
+      </div>
+      <div class="form-group">
+        <label>售出日期</label>
+        <input type="date" id="settleSoldDate" value="${new Date().toISOString().split('T')[0]}">
+      </div>
+    </div>
+
+    <div class="settle-summary" id="settleSummary">
+      <div class="settle-profit-label">盈亏结算</div>
+      <div class="settle-profit-value" id="settleProfitValue">¥0.00</div>
+      <div id="settleDetailRows">
+        <div class="settle-detail-row"><span class="label">进货价</span><span class="value">¥${purchasePrice.toFixed(2)}</span></div>
+        <div class="settle-detail-row"><span class="label">额外支出</span><span class="value">¥0.00</span></div>
+        <div class="settle-detail-row"><span class="label">总成本</span><span class="value">¥${purchasePrice.toFixed(2)}</span></div>
+        <div class="settle-detail-row"><span class="label">到手价</span><span class="value">¥0.00</span></div>
+      </div>
+    </div>
+
+    <div class="settle-actions">
+      <button class="btn-secondary" onclick="goBackFromSettle()">取消</button>
+      <button class="btn-primary" onclick="confirmSettle()">确认结算</button>
+    </div>
+  `;
+
+  document.getElementById('settleContent').innerHTML = html;
+  showPage('pageSettle');
+  calcSettleProfit();
+}
+
+function calcSettleProfit() {
+  const purchase = parseFloat(document.getElementById('settlePurchase').value) || 0;
+  const extraCost = parseFloat(document.getElementById('settleExtraCost').value) || 0;
+  const received = parseFloat(document.getElementById('settleReceived').value) || 0;
+  const totalCost = purchase + extraCost;
+  const profit = received - totalCost;
+
+  const profitEl = document.getElementById('settleProfitValue');
+  profitEl.textContent = (profit >= 0 ? '+' : '') + '¥' + profit.toFixed(2);
+  profitEl.className = 'settle-profit-value ' + (profit >= 0 ? 'positive' : 'negative');
+
+  document.getElementById('settleDetailRows').innerHTML = `
+    <div class="settle-detail-row"><span class="label">进货价</span><span class="value">¥${purchase.toFixed(2)}</span></div>
+    <div class="settle-detail-row"><span class="label">额外支出</span><span class="value">¥${extraCost.toFixed(2)}</span></div>
+    <div class="settle-detail-row"><span class="label">总成本</span><span class="value" style="font-weight:700">¥${totalCost.toFixed(2)}</span></div>
+    <div class="settle-detail-row"><span class="label">到手价</span><span class="value" style="color:var(--success)">¥${received.toFixed(2)}</span></div>
+  `;
+}
+
+function confirmSettle() {
+  if (!settleItemId) return;
+
+  const actualPrice = parseFloat(document.getElementById('settleActualPrice').value) || 0;
+  const extraCost = parseFloat(document.getElementById('settleExtraCost').value) || 0;
+  const received = parseFloat(document.getElementById('settleReceived').value) || 0;
+  const soldDate = document.getElementById('settleSoldDate').value;
+
+  const items = getData(DB_KEYS.items);
+  const idx = items.findIndex(i => i.id === settleItemId);
+  if (idx === -1) return;
+
+  items[idx].status = 'sold';
+  items[idx].saleInfo = {
+    actualSellingPrice: actualPrice,
+    extraCost: extraCost,
+    receivedPrice: received,
+    soldDate: soldDate || new Date().toISOString().split('T')[0]
+  };
+  items[idx].updatedAt = new Date().toISOString();
+
+  setData(DB_KEYS.items, items);
+  settleItemId = null;
+  showToast('结算完成');
+
+  // 跳转到统计页
+  switchTab('stats', document.querySelectorAll('.nav-item')[4]);
+}
+
+function goBackFromSettle() {
+  settleItemId = null;
+  if (currentDetailId) {
+    showDetail(currentDetailId);
+  } else {
+    goHome();
+  }
 }
 
 function deleteCurrentItem() {
@@ -856,7 +997,8 @@ function renderStats() {
 
   const totalPurchase = items.reduce((sum, i) => sum + (i.purchasePrice || 0), 0);
   const totalReceived = items.filter(i => i.status === 'sold').reduce((sum, i) => sum + (i.saleInfo?.receivedPrice || 0), 0);
-  const totalProfit = totalReceived - items.filter(i => i.status === 'sold').reduce((sum, i) => sum + (i.purchasePrice || 0), 0);
+  const totalExtraCost = items.filter(i => i.status === 'sold').reduce((sum, i) => sum + (i.saleInfo?.extraCost || 0), 0);
+  const totalProfit = totalReceived - items.filter(i => i.status === 'sold').reduce((sum, i) => sum + (i.purchasePrice || 0), 0) - totalExtraCost;
 
   const batchTotalCost = batches.reduce((sum, b) => sum + (b.totalCost || 0), 0);
 
@@ -884,8 +1026,20 @@ function renderStats() {
       <h3>财务概览</h3>
       <div class="stats-row"><span class="label">总进货金额</span><span class="value" style="color:var(--primary)">¥${totalPurchase.toFixed(2)}</span></div>
       <div class="stats-row"><span class="label">总到手金额</span><span class="value" style="color:var(--success)">¥${totalReceived.toFixed(2)}</span></div>
+      <div class="stats-row"><span class="label">总额外支出</span><span class="value">¥${totalExtraCost.toFixed(2)}</span></div>
       <div class="stats-row"><span class="label">总利润</span><span class="value" style="color:${totalProfit >= 0 ? 'var(--success)' : 'var(--danger)'}">${totalProfit >= 0 ? '+' : ''}¥${totalProfit.toFixed(2)}</span></div>
       <div class="stats-row"><span class="label">批次总费用</span><span class="value">¥${batchTotalCost.toFixed(2)}</span></div>
+    </div>
+
+    <div class="stats-section">
+      <h3>销售趋势</h3>
+      <div class="stats-time-tabs">
+        <button class="stats-time-tab ${statsTimeMode === 'year' ? 'active' : ''}" onclick="setStatsTimeMode('year')">按年</button>
+        <button class="stats-time-tab ${statsTimeMode === 'month' ? 'active' : ''}" onclick="setStatsTimeMode('month')">按月</button>
+        <button class="stats-time-tab ${statsTimeMode === 'day' ? 'active' : ''}" onclick="setStatsTimeMode('day')">按日</button>
+      </div>
+      ${renderStatsTimeNav()}
+      ${renderStatsTimeData(items)}
     </div>
   `;
 
@@ -930,6 +1084,203 @@ function renderStats() {
   `;
 
   document.getElementById('statsContent').innerHTML = html;
+}
+
+function setStatsTimeMode(mode) {
+  statsTimeMode = mode;
+  statsCurrentDate = new Date();
+  renderStats();
+}
+
+function statsNavPrev() {
+  if (statsTimeMode === 'year') {
+    statsCurrentDate.setFullYear(statsCurrentDate.getFullYear() - 1);
+  } else if (statsTimeMode === 'month') {
+    statsCurrentDate.setMonth(statsCurrentDate.getMonth() - 1);
+  } else {
+    statsCurrentDate.setDate(statsCurrentDate.getDate() - 1);
+  }
+  renderStats();
+}
+
+function statsNavNext() {
+  if (statsTimeMode === 'year') {
+    statsCurrentDate.setFullYear(statsCurrentDate.getFullYear() + 1);
+  } else if (statsTimeMode === 'month') {
+    statsCurrentDate.setMonth(statsCurrentDate.getMonth() + 1);
+  } else {
+    statsCurrentDate.setDate(statsCurrentDate.getDate() + 1);
+  }
+  renderStats();
+}
+
+function renderStatsTimeNav() {
+  let periodLabel = '';
+  if (statsTimeMode === 'year') {
+    periodLabel = statsCurrentDate.getFullYear() + '年';
+  } else if (statsTimeMode === 'month') {
+    periodLabel = statsCurrentDate.getFullYear() + '年' + (statsCurrentDate.getMonth() + 1) + '月';
+  } else {
+    periodLabel = formatDate(statsCurrentDate.toISOString());
+  }
+
+  return `
+    <div class="stats-time-nav">
+      <button class="nav-arrow" onclick="statsNavPrev()">上一${statsTimeMode === 'year' ? '年' : statsTimeMode === 'month' ? '月' : '日'}</button>
+      <span class="nav-period">${periodLabel}</span>
+      <button class="nav-arrow" onclick="statsNavNext()">下一${statsTimeMode === 'year' ? '年' : statsTimeMode === 'month' ? '月' : '日'}</button>
+    </div>
+  `;
+}
+
+function renderStatsTimeData(items) {
+  const soldItems = items.filter(i => i.status === 'sold');
+
+  if (statsTimeMode === 'year') {
+    return renderYearStats(soldItems);
+  } else if (statsTimeMode === 'month') {
+    return renderMonthStats(soldItems);
+  } else {
+    return renderDayStats(soldItems);
+  }
+}
+
+function renderYearStats(soldItems) {
+  const year = statsCurrentDate.getFullYear();
+  const yearItems = soldItems.filter(i => {
+    const d = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt);
+    return d.getFullYear() === year;
+  });
+
+  const count = yearItems.length;
+  const amount = yearItems.reduce((sum, i) => sum + (i.saleInfo?.receivedPrice || 0), 0);
+  const cost = yearItems.reduce((sum, i) => sum + (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0), 0);
+  const profit = amount - cost;
+
+  // 按月拆分
+  const monthlyData = {};
+  for (let m = 0; m < 12; m++) {
+    monthlyData[m] = { count: 0, amount: 0, cost: 0 };
+  }
+  yearItems.forEach(i => {
+    const m = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt).getMonth();
+    monthlyData[m].count++;
+    monthlyData[m].amount += (i.saleInfo?.receivedPrice || 0);
+    monthlyData[m].cost += (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0);
+  });
+
+  let html = `
+    <div class="stats-row" style="font-weight:700;border-bottom:1px solid var(--border);padding-bottom:8px">
+      <span class="label">年度合计</span>
+      <span class="value">${count}件 / 到手¥${amount.toFixed(2)} / 利润<span style="color:${profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${profit >= 0 ? '+' : ''}¥${profit.toFixed(2)}</span></span>
+    </div>
+    <div class="stats-day-list">
+  `;
+
+  for (let m = 0; m < 12; m++) {
+    const d = monthlyData[m];
+    if (d.count > 0) {
+      const mProfit = d.amount - d.cost;
+      html += `
+        <div class="stats-day-row">
+          <span class="date">${m + 1}月</span>
+          <span class="count">${d.count}件</span>
+          <span class="amount">¥${d.amount.toFixed(2)} <span style="font-size:11px;color:${mProfit >= 0 ? 'var(--success)' : 'var(--danger)'}">${mProfit >= 0 ? '+' : ''}¥${mProfit.toFixed(2)}</span></span>
+        </div>
+      `;
+    }
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderMonthStats(soldItems) {
+  const year = statsCurrentDate.getFullYear();
+  const month = statsCurrentDate.getMonth();
+  const monthItems = soldItems.filter(i => {
+    const d = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt);
+    return d.getFullYear() === year && d.getMonth() === month;
+  });
+
+  const count = monthItems.length;
+  const amount = monthItems.reduce((sum, i) => sum + (i.saleInfo?.receivedPrice || 0), 0);
+  const cost = monthItems.reduce((sum, i) => sum + (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0), 0);
+  const profit = amount - cost;
+
+  // 按日拆分
+  const dailyData = {};
+  monthItems.forEach(i => {
+    const day = new Date(i.saleInfo?.soldDate || i.updatedAt || i.createdAt).getDate();
+    if (!dailyData[day]) dailyData[day] = { count: 0, amount: 0, cost: 0 };
+    dailyData[day].count++;
+    dailyData[day].amount += (i.saleInfo?.receivedPrice || 0);
+    dailyData[day].cost += (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0);
+  });
+
+  let html = `
+    <div class="stats-row" style="font-weight:700;border-bottom:1px solid var(--border);padding-bottom:8px">
+      <span class="label">月度合计</span>
+      <span class="value">${count}件 / 到手¥${amount.toFixed(2)} / 利润<span style="color:${profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${profit >= 0 ? '+' : ''}¥${profit.toFixed(2)}</span></span>
+    </div>
+    <div class="stats-day-list">
+  `;
+
+  const days = Object.keys(dailyData).sort((a, b) => b - a);
+  days.forEach(day => {
+    const d = dailyData[day];
+    const dProfit = d.amount - d.cost;
+    html += `
+      <div class="stats-day-row">
+        <span class="date">${month + 1}月${day}日</span>
+        <span class="count">${d.count}件</span>
+        <span class="amount">¥${d.amount.toFixed(2)} <span style="font-size:11px;color:${dProfit >= 0 ? 'var(--success)' : 'var(--danger)'}">${dProfit >= 0 ? '+' : ''}¥${dProfit.toFixed(2)}</span></span>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function renderDayStats(soldItems) {
+  const dateStr = formatDate(statsCurrentDate.toISOString());
+  const dayItems = soldItems.filter(i => {
+    const d = i.saleInfo?.soldDate || formatDate(i.updatedAt || i.createdAt);
+    return d === dateStr;
+  });
+
+  const count = dayItems.length;
+  const amount = dayItems.reduce((sum, i) => sum + (i.saleInfo?.receivedPrice || 0), 0);
+  const cost = dayItems.reduce((sum, i) => sum + (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0), 0);
+  const profit = amount - cost;
+
+  let html = `
+    <div class="stats-row" style="font-weight:700;border-bottom:1px solid var(--border);padding-bottom:8px">
+      <span class="label">当日合计</span>
+      <span class="value">${count}件 / 到手¥${amount.toFixed(2)} / 利润<span style="color:${profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${profit >= 0 ? '+' : ''}¥${profit.toFixed(2)}</span></span>
+    </div>
+  `;
+
+  if (dayItems.length > 0) {
+    html += '<div class="stats-day-list">';
+    dayItems.forEach(i => {
+      const iCost = (i.purchasePrice || 0) + (i.saleInfo?.extraCost || 0);
+      const iProfit = (i.saleInfo?.receivedPrice || 0) - iCost;
+      html += `
+        <div class="stats-day-row" onclick="showDetail('${i.id}')" style="cursor:pointer">
+          <span class="date">${escHtml(i.name)}</span>
+          <span class="count">进¥${(i.purchasePrice || 0).toFixed(0)}</span>
+          <span class="amount">得¥${(i.saleInfo?.receivedPrice || 0).toFixed(0)} <span style="font-size:11px;color:${iProfit >= 0 ? 'var(--success)' : 'var(--danger)'}">${iProfit >= 0 ? '+' : ''}¥${iProfit.toFixed(0)}</span></span>
+        </div>
+      `;
+    });
+    html += '</div>';
+  } else {
+    html += '<div style="text-align:center;padding:20px;color:var(--text-secondary);letter-spacing:2px;font-size:13px">当日无销售记录</div>';
+  }
+
+  return html;
 }
 
 // ===== 工具函数 =====

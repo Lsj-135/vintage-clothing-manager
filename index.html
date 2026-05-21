@@ -195,6 +195,7 @@
         <button class="back-btn" onclick="goHome()">返回</button>
         <h2>衣物详情</h2>
         <div class="detail-actions">
+          <button class="icon-btn" id="btnMarkSold" onclick="showSettlePage()" style="display:none">售出</button>
           <button class="icon-btn" onclick="editCurrentItem()">编辑</button>
           <button class="icon-btn delete-btn" onclick="deleteCurrentItem()">删除</button>
         </div>
@@ -220,6 +221,16 @@
         <button class="save-btn" onclick="addBatch()">新增</button>
       </div>
       <div id="batchList" class="manage-list"></div>
+    </section>
+
+    <!-- 售出结算页 -->
+    <section id="pageSettle" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goBackFromSettle()">返回</button>
+        <h2>售出结算</h2>
+        <div></div>
+      </div>
+      <div id="settleContent" class="settle-content"></div>
     </section>
 
     <!-- 统计页 -->

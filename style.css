@@ -1144,6 +1144,168 @@ input, select, textarea, button {
   padding: 2px 8px;
 }
 
+/* ===== 售出结算页 ===== */
+.settle-content {
+  padding: 16px;
+}
+
+.settle-item-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settle-summary {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 16px;
+  margin-top: 16px;
+  text-align: center;
+}
+
+.settle-profit-value {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin: 8px 0;
+}
+
+.settle-profit-value.positive {
+  color: var(--success);
+}
+
+.settle-profit-value.negative {
+  color: var(--danger);
+}
+
+.settle-profit-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 2px;
+}
+
+.settle-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 13px;
+  border-bottom: 1px dashed #eee;
+  letter-spacing: 1px;
+}
+
+.settle-detail-row:last-child {
+  border-bottom: none;
+}
+
+.settle-detail-row .label {
+  color: var(--text-secondary);
+}
+
+.settle-detail-row .value {
+  font-weight: 500;
+}
+
+.settle-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+/* ===== 统计时间维度 ===== */
+.stats-time-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+
+.stats-time-tab {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  border: none;
+  background: white;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.stats-time-tab:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.stats-time-tab.active {
+  background: var(--primary);
+  color: #f5f4f0;
+  font-weight: 700;
+}
+
+.stats-time-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.stats-time-nav .nav-arrow {
+  background: none;
+  border: 1px solid var(--border);
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+}
+
+.stats-time-nav .nav-arrow:active {
+  background: var(--bg);
+}
+
+.stats-time-nav .nav-period {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.stats-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stats-day-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: 13px;
+  border-bottom: 1px dashed #eee;
+  letter-spacing: 1px;
+}
+
+.stats-day-row:last-child {
+  border-bottom: none;
+}
+
+.stats-day-row .date {
+  color: var(--text-secondary);
+}
+
+.stats-day-row .count {
+  font-weight: 500;
+}
+
+.stats-day-row .amount {
+  font-weight: 600;
+  color: var(--primary);
+}
+
 /* ===== 二维码容器 ===== */
 .qr-code-container {
   display: flex;
