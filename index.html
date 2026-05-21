@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#e8685a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='30' fill='%23e8685a'/><text x='90' y='125' font-size='110' text-anchor='middle' fill='white'>👗</text></svg>">
+  <title>服装进货管理系统</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="app-header">
+    <h1 class="app-title" id="pageTitle">服装进货管理</h1>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="showQrModal()" title="扫码">📱</button>
+      <button class="icon-btn" onclick="showSearch()" title="搜索">🔍</button>
+      <button class="icon-btn" onclick="showStats()" title="统计">📊</button>
+    </div>
+  </header>
+
+  <!-- 搜索面板 -->
+  <div id="searchPanel" class="search-panel hidden">
+    <div class="search-inner">
+      <input type="text" id="searchInput" placeholder="搜索衣服名称、备注..." oninput="filterItems()">
+      <button class="icon-btn" onclick="hideSearch()">✕</button>
+    </div>
+  </div>
+
+  <!-- 主内容区 -->
+  <main class="main-content">
+    <!-- 首页/衣服列表 -->
+    <section id="pageHome" class="page active">
+      <!-- 筛选栏 -->
+      <div class="filter-bar">
+        <div class="filter-scroll">
+          <button class="filter-chip active" data-filter="all" onclick="setFilter('all', this)">全部</button>
+          <div id="categoryFilters"></div>
+        </div>
+        <div class="filter-actions">
+          <select id="statusFilter" onchange="filterItems()">
+            <option value="all">所有状态</option>
+            <option value="in_stock">在库</option>
+            <option value="sold">已售</option>
+            <option value="returned">已退</option>
+          </select>
+        </div>
+      </div>
+      <!-- 衣服列表 -->
+      <div id="clothesList" class="clothes-list"></div>
+      <!-- 空状态 -->
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">👗</div>
+        <p>还没有添加衣服</p>
+        <p class="empty-hint">点击右下角 + 按钮添加</p>
+      </div>
+    </section>
+
+    <!-- 添加/编辑衣服 -->
+    <section id="pageForm" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <h2 id="formTitle">添加衣服</h2>
+        <button class="save-btn" onclick="saveItem()">保存</button>
+      </div>
+      <form id="itemForm" class="item-form">
+        <!-- 图片上传 -->
+        <div class="form-section">
+          <div class="image-upload" id="imageUpload" onclick="document.getElementById('imageInput').click()">
+            <img id="imagePreview" class="image-preview hidden" alt="预览">
+            <div id="imagePlaceholder" class="image-placeholder">
+              <span class="upload-icon">📷</span>
+              <span>点击上传图片</span>
+            </div>
+            <input type="file" id="imageInput" accept="image/*" hidden onchange="handleImageUpload(this)">
+          </div>
+          <button type="button" class="remove-image-btn hidden" id="removeImageBtn" onclick="removeImage()">移除图片</button>
+        </div>
+
+        <!-- 基本信息 -->
+        <div class="form-section">
+          <h3 class="section-title">基本信息</h3>
+          <div class="form-group">
+            <label>名称</label>
+            <input type="text" id="itemName" placeholder="输入衣服名称" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>分类</label>
+              <select id="itemCategory">
+                <option value="">选择分类</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>批次</label>
+              <select id="itemBatch">
+                <option value="">选择批次</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 尺寸参数 -->
+        <div class="form-section">
+          <h3 class="section-title">尺寸参数 (cm)</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>衣长</label>
+              <input type="number" id="paramLength" placeholder="衣长" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>胸围</label>
+              <input type="number" id="paramChest" placeholder="胸围" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>腰围</label>
+              <input type="number" id="paramWaist" placeholder="腰围" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>肩宽</label>
+              <input type="number" id="paramShoulder" placeholder="肩宽" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>袖长</label>
+              <input type="number" id="paramSleeve" placeholder="袖长" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>臀围</label>
+              <input type="number" id="paramHip" placeholder="臀围" step="0.1">
+            </div>
+          </div>
+          <!-- 自定义参数 -->
+          <div id="customParams" class="custom-params"></div>
+          <button type="button" class="add-param-btn" onclick="addCustomParam()">+ 添加自定义参数</button>
+        </div>
+
+        <!-- 价格信息 -->
+        <div class="form-section">
+          <h3 class="section-title">价格信息</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>进货价</label>
+              <input type="number" id="purchasePrice" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>标价</label>
+              <input type="number" id="sellingPrice" placeholder="0.00" step="0.01">
+            </div>
+          </div>
+        </div>
+
+        <!-- 销售状态 -->
+        <div class="form-section">
+          <h3 class="section-title">销售状态</h3>
+          <div class="form-group">
+            <label>状态</label>
+            <select id="itemStatus" onchange="toggleSaleInfo()">
+              <option value="in_stock">在库</option>
+              <option value="sold">已售</option>
+              <option value="returned">已退</option>
+            </select>
+          </div>
+          <div id="saleInfoSection" class="sale-info-section hidden">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>实际卖出价</label>
+                <input type="number" id="actualSellingPrice" placeholder="0.00" step="0.01">
+              </div>
+              <div class="form-group">
+                <label>到手价</label>
+                <input type="number" id="receivedPrice" placeholder="0.00" step="0.01">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>售出日期</label>
+              <input type="date" id="soldDate">
+            </div>
+          </div>
+        </div>
+
+        <!-- 备注 -->
+        <div class="form-section">
+          <h3 class="section-title">备注</h3>
+          <textarea id="itemNotes" placeholder="添加备注..." rows="3"></textarea>
+        </div>
+      </form>
+    </section>
+
+    <!-- 详情页 -->
+    <section id="pageDetail" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <h2>衣服详情</h2>
+        <div class="detail-actions">
+          <button class="icon-btn" onclick="editCurrentItem()">✏️</button>
+          <button class="icon-btn delete-btn" onclick="deleteCurrentItem()">🗑️</button>
+        </div>
+      </div>
+      <div id="detailContent" class="detail-content"></div>
+    </section>
+
+    <!-- 分类管理 -->
+    <section id="pageCategories" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <h2>分类管理</h2>
+        <button class="save-btn" onclick="addCategory()">+ 新增</button>
+      </div>
+      <div id="categoryList" class="manage-list"></div>
+    </section>
+
+    <!-- 批次管理 -->
+    <section id="pageBatches" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <h2>批次管理</h2>
+        <button class="save-btn" onclick="addBatch()">+ 新增</button>
+      </div>
+      <div id="batchList" class="manage-list"></div>
+    </section>
+
+    <!-- 统计页 -->
+    <section id="pageStats" class="page">
+      <div class="page-header">
+        <button class="back-btn" onclick="goHome()">← 返回</button>
+        <h2>数据统计</h2>
+        <div></div>
+      </div>
+      <div id="statsContent" class="stats-content"></div>
+    </section>
+  </main>
+
+  <!-- 底部导航 -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('home', this)">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">首页</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('categories', this)">
+      <span class="nav-icon">📂</span>
+      <span class="nav-label">分类</span>
+    </button>
+    <button class="nav-item fab" onclick="showAddForm()">
+      <span class="nav-icon">+</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('batches', this)">
+      <span class="nav-icon">📦</span>
+      <span class="nav-label">批次</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('stats', this)">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">统计</span>
+    </button>
+  </nav>
+
+  <!-- 弹窗：添加分类 -->
+  <div id="categoryModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeCategoryModal()"></div>
+    <div class="modal-content">
+      <h3 id="categoryModalTitle">添加分类</h3>
+      <div class="form-group">
+        <label>分类名称</label>
+        <input type="text" id="categoryName" placeholder="如：上衣、裤子、裙子...">
+      </div>
+      <div class="form-group">
+        <label>图标 (emoji)</label>
+        <div class="emoji-picker">
+          <button type="button" class="emoji-option" onclick="selectEmoji('👕')">👕</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('👖')">👖</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('👗')">👗</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('👔')">👔</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('🧥')">🧥</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('🩳')">🩳</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('👘')">👘</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('🩱')">🩱</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('👙')">👙</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('🧦')">🧦</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('👟')">👟</button>
+          <button type="button" class="emoji-option" onclick="selectEmoji('🧢')">🧢</button>
+        </div>
+        <input type="text" id="categoryIcon" placeholder="或输入自定义emoji" class="emoji-input">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeCategoryModal()">取消</button>
+        <button class="btn-primary" onclick="saveCategory()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：添加批次 -->
+  <div id="batchModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeBatchModal()"></div>
+    <div class="modal-content">
+      <h3 id="batchModalTitle">添加批次</h3>
+      <div class="form-group">
+        <label>批次名称</label>
+        <input type="text" id="batchName" placeholder="如：2024年1月进货...">
+      </div>
+      <div class="form-group">
+        <label>进货日期</label>
+        <input type="date" id="batchDate">
+      </div>
+      <div class="form-group">
+        <label>批次总费用</label>
+        <input type="number" id="batchTotalCost" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="batchNotes" placeholder="批次备注..." rows="2"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeBatchModal()">取消</button>
+        <button class="btn-primary" onclick="saveBatch()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：状态管理 -->
+  <div id="statusModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeStatusModal()"></div>
+    <div class="modal-content">
+      <h3>自定义状态</h3>
+      <div id="statusList" class="status-list"></div>
+      <div class="form-group" style="margin-top:12px">
+        <label>添加新状态</label>
+        <div class="add-status-row">
+          <input type="text" id="newStatusName" placeholder="状态名称">
+          <button class="btn-primary" onclick="addCustomStatus()">添加</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeStatusModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA 安装提示横幅 -->
+  <div id="installBanner" class="install-banner hidden">
+    <span>📱 添加到主屏幕，像APP一样使用</span>
+    <div class="install-banner-actions">
+      <button class="install-btn" onclick="installApp()">安装</button>
+      <button class="dismiss-btn" onclick="dismissInstall()">✕</button>
+    </div>
+  </div>
+
+  <!-- 二维码弹窗 -->
+  <div id="qrModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeQrModal()"></div>
+    <div class="modal-content" style="text-align:center">
+      <h3>扫码在手机上打开</h3>
+      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px">确保手机和电脑在同一WiFi下</p>
+      <div id="qrCode" class="qr-code-container"></div>
+      <p id="qrUrl" style="margin-top:12px;font-size:12px;color:var(--text-secondary);word-break:break-all"></p>
+      <div style="margin-top:16px;padding:12px;background:#faf8f6;border-radius:8px;text-align:left">
+        <p style="font-size:13px;font-weight:600;margin-bottom:6px">安装步骤：</p>
+        <p style="font-size:12px;color:var(--text-secondary);line-height:1.8">
+          1. 手机扫码打开页面<br>
+          2. 点击浏览器菜单（⋯或⬆️）<br>
+          3. 选择"添加到主屏幕"<br>
+          4. 点击"安装"即可
+        </p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeQrModal()">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
