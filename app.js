@@ -1,3 +1,121 @@
+// ===== Firebase 同步配置 =====
+let firebaseEnabled = false;
+let syncInProgress = false;
+let lastSyncTime = 0;
+
+// 检查 Firebase 是否可用
+function isFirebaseAvailable() {
+  return window.firebaseDB && window.firebaseSetDoc && window.firebaseGetDoc;
+}
+
+// 同步数据到 Firebase
+async function syncToFirebase() {
+  if (!isFirebaseAvailable() || syncInProgress) return;
+  
+  syncInProgress = true;
+  try {
+    const data = {
+      items: getData(DB_KEYS.items),
+      categories: getData(DB_KEYS.categories),
+      batches: getData(DB_KEYS.batches),
+      customStatuses: getData(DB_KEYS.customStatuses),
+      lastSync: new Date().toISOString()
+    };
+    
+    await window.firebaseSetDoc(
+      window.firebaseDoc(window.firebaseDB, 'data', 'main'), 
+      data
+    );
+    
+    lastSyncTime = Date.now();
+    console.log('数据已同步到 Firebase');
+  } catch (e) {
+    console.error('同步到 Firebase 失败:', e);
+  } finally {
+    syncInProgress = false;
+  }
+}
+
+// 从 Firebase 同步数据
+async function syncFromFirebase() {
+  if (!isFirebaseAvailable()) return false;
+  
+  try {
+    const docSnap = await window.firebaseGetDoc(
+      window.firebaseDoc(window.firebaseDB, 'data', 'main')
+    );
+    
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      
+      // 检查是否有新数据
+      const localItems = getData(DB_KEYS.items);
+      if (data.items && JSON.stringify(data.items) !== JSON.stringify(localItems)) {
+        // 合并数据（避免覆盖本地未同步的数据）
+        const mergedItems = mergeData(localItems, data.items);
+        setData(DB_KEYS.items, mergedItems);
+      }
+      
+      if (data.categories) setData(DB_KEYS.categories, data.categories);
+      if (data.batches) setData(DB_KEYS.batches, data.batches);
+      if (data.customStatuses) setData(DB_KEYS.customStatuses, data.customStatuses);
+      
+      console.log('已从 Firebase 同步数据');
+      return true;
+    }
+  } catch (e) {
+    console.error('从 Firebase 同步失败:', e);
+  }
+  return false;
+}
+
+// 合并数据（根据更新时间）
+function mergeData(localData, remoteData) {
+  const merged = [...localData];
+  const localIds = new Set(localData.map(item => item.id));
+  
+  remoteData.forEach(remoteItem => {
+    const localIndex = merged.findIndex(item => item.id === remoteItem.id);
+    if (localIndex === -1) {
+      // 远程有新数据，添加
+      merged.push(remoteItem);
+    } else {
+      // 比较更新时间，保留最新的
+      const localDate = new Date(merged[localIndex].updatedAt || 0);
+      const remoteDate = new Date(remoteItem.updatedAt || 0);
+      if (remoteDate > localDate) {
+        merged[localIndex] = remoteItem;
+      }
+    }
+  });
+  
+  return merged;
+}
+
+// 设置实时监听
+function setupRealtimeSync() {
+  if (!isFirebaseAvailable()) return;
+  
+  window.firebaseOnSnapshot(
+    window.firebaseDoc(window.firebaseDB, 'data', 'main'),
+    (doc) => {
+      if (doc.exists()) {
+        const data = doc.data();
+        const localItems = getData(DB_KEYS.items);
+        
+        // 检查数据是否有变化
+        if (data.items && JSON.stringify(data.items) !== JSON.stringify(localItems)) {
+          console.log('检测到远程数据变化，正在同步...');
+          syncFromFirebase().then(() => {
+            renderList();
+            showToast('数据已同步');
+          });
+        }
+      }
+    }
+  );
+}
+
 // ===== 数据管理 =====
 const DB_KEYS = {
   items: 'vintage_items',
@@ -72,6 +190,9 @@ function setData(key, data) {
     if (!saved) {
       throw new Error('保存验证失败');
     }
+    
+    // 自动同步到 Firebase
+    syncToFirebase();
     
     // 自动备份到 IndexedDB
     autoBackup();
@@ -1645,11 +1766,17 @@ function renderStats() {
   html += `
     <div class="stats-section">
       <h3>存储状态</h3>
-      <div class="stats-row"><span class="label">版本</span><span class="value">v1.9</span></div>
+      <div class="stats-row"><span class="label">版本</span><span class="value">v2.0</span></div>
+      <div class="stats-row"><span class="label">云端同步</span><span class="value" style="color:${isFirebaseAvailable() ? 'var(--success)' : 'var(--text-secondary)'}">${isFirebaseAvailable() ? '已连接' : '未配置'}</span></div>
       <div class="stats-row"><span class="label">已用空间</span><span class="value">${getStorageUsageMB()} MB / 5 MB</span></div>
       <div class="stats-row"><span class="label">衣物数量</span><span class="value">${totalItems} 件</span></div>
       <div class="stats-row"><span class="label">自动备份</span><span class="value" id="backupStatusText">${backupDb ? (backupFailCount >= 2 ? '异常' : '已开启') : '未开启'}</span></div>
       <div class="stats-row"><span class="label">最近备份</span><span class="value" id="lastBackupText">${backupFailCount >= 5 ? '多次失败' : getLastBackupText()}</span></div>
+    </div>
+    
+    <div class="stats-section" style="text-align:center">
+      <button class="btn-primary" onclick="syncToFirebase()" style="display:inline-block;width:auto;padding:10px 20px;margin:4px" ${!isFirebaseAvailable() ? 'disabled' : ''}>同步到云端</button>
+      <button class="btn-secondary" onclick="syncFromFirebase()" style="display:inline-block;width:auto;padding:10px 20px;margin:4px" ${!isFirebaseAvailable() ? 'disabled' : ''}>从云端恢复</button>
     </div>
 
     <div class="stats-section" style="text-align:center">
@@ -2319,6 +2446,25 @@ document.addEventListener('DOMContentLoaded', async function() {
   } catch (e) {
     console.warn('IndexedDB 备份不可用，仅使用 localStorage');
   }
+
+  // 设置 Firebase 实时同步
+  setTimeout(() => {
+    if (isFirebaseAvailable()) {
+      console.log('Firebase 已启用，设置实时同步...');
+      setupRealtimeSync();
+      
+      // 首次同步数据
+      syncFromFirebase().then(() => {
+        renderList();
+        showToast('已连接到云端');
+      });
+      
+      firebaseEnabled = true;
+    } else {
+      console.log('Firebase 未配置，使用本地存储');
+      showToast('未配置云端同步，数据仅保存在本地');
+    }
+  }, 2000); // 等待 Firebase 初始化
 
   renderList();
   startNetworkCheck();
