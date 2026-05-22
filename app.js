@@ -2281,8 +2281,9 @@ async function loadDataWithRetry() {
       const items = getData(DB_KEYS.items);
       const categories = getData(DB_KEYS.categories);
       
-      if (!items || !categories) {
-        throw new Error('数据加载失败');
+      // 确保数据是数组
+      if (!Array.isArray(items) || !Array.isArray(categories)) {
+        throw new Error('数据格式错误');
       }
       
       return true;
@@ -2301,7 +2302,10 @@ async function loadDataWithRetry() {
 
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', async function() {
-  // 先加载数据
+  // 先初始化默认数据（确保 localStorage 有数据）
+  initDefaults();
+  
+  // 再加载数据
   const dataLoaded = await loadDataWithRetry();
   if (!dataLoaded) {
     showToast('数据加载失败，请检查网络或刷新页面');
