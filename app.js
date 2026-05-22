@@ -52,7 +52,27 @@ function getData(key) {
 
 function setData(key, data) {
   try {
-    localStorage.setItem(key, JSON.stringify(data));
+    // 先验证数据
+    if (!data || !Array.isArray(data)) {
+      console.error('无效数据:', key);
+      return false;
+    }
+    
+    const jsonStr = JSON.stringify(data);
+    if (!jsonStr) {
+      console.error('数据序列化失败:', key);
+      return false;
+    }
+    
+    // 保存到 localStorage
+    localStorage.setItem(key, jsonStr);
+    
+    // 验证保存成功
+    const saved = localStorage.getItem(key);
+    if (!saved) {
+      throw new Error('保存验证失败');
+    }
+    
     // 自动备份到 IndexedDB
     autoBackup();
     // 提醒存手机
@@ -63,7 +83,7 @@ function setData(key, data) {
     if (e.name === 'QuotaExceededError' || e.code === 22) {
       showToast('存储空间不足，请导出备份后清理数据');
     } else {
-      showToast('数据保存失败');
+      showToast('数据保存失败，请重试');
     }
     // 即使 localStorage 失败，仍尝试备份到 IndexedDB
     autoBackup();
@@ -2218,9 +2238,74 @@ function closeQrModal() {
   document.getElementById('qrModal').classList.add('hidden');
 }
 
+// ===== 网络状态检测 =====
+let isOnline = navigator.onLine;
+let networkCheckInterval = null;
+
+function updateNetworkStatus() {
+  const wasOnline = isOnline;
+  isOnline = navigator.onLine;
+  
+  if (isOnline && !wasOnline) {
+    showToast('网络已连接');
+    // 网络恢复时重新加载数据
+    setTimeout(() => {
+      renderList();
+      checkAndAutoRecover();
+    }, 500);
+  } else if (!isOnline && wasOnline) {
+    showToast('网络已断开，使用本地数据');
+  }
+}
+
+window.addEventListener('online', updateNetworkStatus);
+window.addEventListener('offline', updateNetworkStatus);
+
+// 定期检查网络状态（每30秒）
+function startNetworkCheck() {
+  if (networkCheckInterval) clearInterval(networkCheckInterval);
+  networkCheckInterval = setInterval(() => {
+    updateNetworkStatus();
+  }, 30000);
+}
+
+// ===== 数据加载增强 =====
+async function loadDataWithRetry() {
+  let retries = 3;
+  while (retries > 0) {
+    try {
+      // 确保 localStorage 数据可用
+      initDefaults();
+      
+      // 验证数据完整性
+      const items = getData(DB_KEYS.items);
+      const categories = getData(DB_KEYS.categories);
+      
+      if (!items || !categories) {
+        throw new Error('数据加载失败');
+      }
+      
+      return true;
+    } catch (e) {
+      retries--;
+      if (retries === 0) {
+        console.error('数据加载失败:', e);
+        showToast('数据加载失败，请刷新页面');
+        return false;
+      }
+      // 等待1秒后重试
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', async function() {
-  initDefaults();
+  // 先加载数据
+  const dataLoaded = await loadDataWithRetry();
+  if (!dataLoaded) {
+    showToast('数据加载失败，请检查网络或刷新页面');
+  }
 
   // 初始化 IndexedDB 备份
   try {
@@ -2232,11 +2317,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   renderList();
+  startNetworkCheck();
 
   // 注册 Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(reg => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js');
       console.log('Service Worker 注册成功');
+      
       // 检查更新
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
@@ -2247,9 +2335,15 @@ document.addEventListener('DOMContentLoaded', async function() {
           }
         });
       });
-    }).catch(err => {
+      
+      // 确保 Service Worker 激活
+      if (reg.active) {
+        console.log('Service Worker 已激活');
+      }
+    } catch (err) {
       console.log('Service Worker 注册失败', err);
-    });
+      showToast('离线功能不可用，请检查网络');
+    }
   }
 });
 
