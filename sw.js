@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vintage-app-v8';
+const CACHE_NAME = 'vintage-app-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -25,23 +25,25 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// 请求：缓存优先，网络回退
+// 请求：网络优先，缓存回退（更适合频繁更新的应用）
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request).then(response => {
-        // 动态缓存新请求
-        if (response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    }).catch(() => {
-      // 离线回退
-      if (event.request.destination === 'document') {
-        return caches.match('./index.html');
+    fetch(event.request).then(response => {
+      // 缓存新响应
+      if (response.status === 200) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
       }
+      return response;
+    }).catch(() => {
+      // 网络失败，回退到缓存
+      return caches.match(event.request).then(cached => {
+        if (cached) return cached;
+        // 离线回退首页
+        if (event.request.destination === 'document') {
+          return caches.match('./index.html');
+        }
+      });
     })
   );
 });

@@ -1625,7 +1625,7 @@ function renderStats() {
   html += `
     <div class="stats-section">
       <h3>存储状态</h3>
-      <div class="stats-row"><span class="label">版本</span><span class="value">v1.8</span></div>
+      <div class="stats-row"><span class="label">版本</span><span class="value">v1.9</span></div>
       <div class="stats-row"><span class="label">已用空间</span><span class="value">${getStorageUsageMB()} MB / 5 MB</span></div>
       <div class="stats-row"><span class="label">衣物数量</span><span class="value">${totalItems} 件</span></div>
       <div class="stats-row"><span class="label">自动备份</span><span class="value" id="backupStatusText">${backupDb ? (backupFailCount >= 2 ? '异常' : '已开启') : '未开启'}</span></div>
@@ -1651,6 +1651,7 @@ function renderStats() {
     <div class="stats-section" style="text-align:center">
       <button class="btn-primary" onclick="showStatusModal()" style="display:inline-block;width:auto;padding:10px 24px">管理自定义状态</button>
       <button class="btn-secondary" onclick="generateTestData()" style="display:inline-block;width:auto;padding:10px 24px;margin-left:4px">生成测试数据</button>
+      <button class="btn-secondary" onclick="clearCacheAndUpdate()" style="display:inline-block;width:auto;padding:10px 24px;margin-left:4px">清除缓存更新</button>
     </div>
   `;
 
@@ -2234,10 +2235,45 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   // 注册 Service Worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(() => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
       console.log('Service Worker 注册成功');
+      // 检查更新
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            console.log('发现新版本，刷新即可更新');
+            showToast('发现新版本，请刷新页面');
+          }
+        });
+      });
     }).catch(err => {
       console.log('Service Worker 注册失败', err);
     });
   }
 });
+
+// ===== 新增：清除缓存功能 =====
+async function clearCacheAndUpdate() {
+  if ('caches' in window) {
+    try {
+      const keys = await caches.keys();
+      for (let key of keys) {
+        await caches.delete(key);
+      }
+      showToast('缓存已清除，刷新页面');
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (let reg of regs) {
+          await reg.unregister();
+        }
+      }
+      setTimeout(() => location.reload(), 1000);
+    } catch (e) {
+      console.error('清除缓存失败:', e);
+      showToast('清除失败，请手动刷新');
+    }
+  } else {
+    location.reload();
+  }
+}
