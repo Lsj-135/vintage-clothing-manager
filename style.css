@@ -208,8 +208,8 @@ input, select, textarea, button {
 /* ===== 衣服列表 ===== */
 .clothes-list {
   padding: 10px 16px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 
@@ -219,6 +219,7 @@ input, select, textarea, button {
   overflow: hidden;
   border: 1px solid var(--border);
   display: flex;
+  flex-direction: column;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -228,8 +229,8 @@ input, select, textarea, button {
 }
 
 .card-image {
-  width: 100px;
-  min-height: 120px;
+  width: 100%;
+  aspect-ratio: 1;
   flex-shrink: 0;
   background: var(--bg);
   display: flex;
@@ -238,9 +239,8 @@ input, select, textarea, button {
   font-size: 14px;
   color: var(--text-secondary);
   overflow: hidden;
-  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   letter-spacing: 2px;
-  writing-mode: vertical-rl;
 }
 
 .card-image img {
@@ -251,27 +251,27 @@ input, select, textarea, button {
 
 .card-info {
   flex: 1;
-  padding: 10px 12px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
 }
 
 .card-name {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .card-meta {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   display: flex;
-  gap: 8px;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
@@ -283,9 +283,9 @@ input, select, textarea, button {
 
 .card-prices {
   display: flex;
-  gap: 12px;
-  margin-top: 3px;
-  font-size: 13px;
+  gap: 8px;
+  margin-top: 2px;
+  font-size: 12px;
 }
 
 .price-purchase {
