@@ -2448,23 +2448,31 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   // 设置 Firebase 实时同步
-  setTimeout(() => {
-    if (isFirebaseAvailable()) {
-      console.log('Firebase 已启用，设置实时同步...');
-      setupRealtimeSync();
-      
-      // 首次同步数据
-      syncFromFirebase().then(() => {
+  async function initFirebaseSync() {
+    let retries = 10;
+    while (retries > 0) {
+      if (isFirebaseAvailable()) {
+        console.log('Firebase 已启用，设置实时同步...');
+        setupRealtimeSync();
+        
+        // 首次同步数据
+        await syncFromFirebase();
         renderList();
         showToast('已连接到云端');
-      });
+        
+        firebaseEnabled = true;
+        return;
+      }
       
-      firebaseEnabled = true;
-    } else {
-      console.log('Firebase 未配置，使用本地存储');
-      showToast('未配置云端同步，数据仅保存在本地');
+      retries--;
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
-  }, 2000); // 等待 Firebase 初始化
+    
+    console.log('Firebase 未配置，使用本地存储');
+    showToast('未配置云端同步，数据仅保存在本地');
+  }
+  
+  initFirebaseSync();
 
   renderList();
   startNetworkCheck();
